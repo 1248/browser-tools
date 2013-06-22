@@ -1,0 +1,21 @@
+{
+  "name": "browser-tools",
+  "version": "0.0.1",
+  "description": "Browser based tools for catalogue formats",
+  "main": "api.js",
+  "scripts": {
+    "start": "nodemon lib/api.js",
+    "test": "find lib -name *.js | xargs node_modules/jshint/bin/jshint"
+  },
+  "author": "Toby Jaffey <toby@1248.io>",
+  "devDependencies": {
+    "nodemon": "~0.7.4",
+    "jshint": "~1.0.0"
+  },
+  "dependencies": {
+    "node-static": "~0.6.7",
+    "request": "~2.14.0",
+    "express": "~3.1.0",
+    "URIjs": "~1.10.2"
+  }
+}

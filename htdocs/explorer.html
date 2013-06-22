@@ -1,0 +1,386 @@
+<html>
+<head>
+<link rel="stylesheet" type="text/css" href="css/diQuery-collapsiblePanel.css">
+<style type="text/css">
+h1 {color:red;}
+#log {
+    height: 15%;
+    width:100%; 
+    padding:10px;
+    background:#808080;
+    overflow:scroll;
+    font-family: monospace;
+}
+.green {
+    background-color:#008000;
+}
+.yellow {
+    background-color:#FFFF66;
+}
+#canvascontainer {
+    border: 2px solid black;
+}
+</style>
+<script src="js/jquery-1.9.1.min.js"></script>
+<script src="js/jquery.scrollTo-1.4.2-min.js"></script>
+<script type="text/javascript" src="js/URI.js"></script>
+<script type="text/javascript" src="js/springy.js"></script>
+<script type="text/javascript" src="js/springyui.js"></script>
+<script>
+var facts = [];
+var graph, springy;
+var cursor = "";
+var cursor_subURL = "";
+
+function log(msg) {
+    var log = $('#log');
+    log.append(msg + "<br/>\n");
+    log.scrollTo('100%');
+}
+
+function populateExamples() {
+    $("#examples").append(new Option("Select example URL", ""));
+
+    $.ajax({
+        type: 'GET',
+        url: '/listexamples',
+        dataType: 'json',
+        success: function(body, textStatus, xhr) {
+            for (var i=0;i<body.length;i++)
+                $("#examples").append(new Option(body[i], body[i]));
+        },
+        error: function() {
+            log("Error listing examples");
+        }
+    });
+}
+
+function fetch(url, cb) {
+    log('-> GET ' + url);
+    $.ajax({
+        type: 'GET',
+        url: '/fetch?url='+encodeURI(url),
+        dataType: 'json',
+        success: function(body, textStatus, xhr) {
+            log('<- ' + xhr.status + ' ' + xhr.statusText);
+            cb(null, body);
+        },
+        error: function() {
+            log("Error fetching "+url);
+        }
+    });
+}
+
+function storeFact(o) {
+    // only store unique facts
+    for (var i=0;i<facts.length;i++) {
+        if (facts[i].subject == o.subject &&
+            facts[i].predicate == o.predicate &&
+            facts[i].object == o.object /* &&
+            facts[i].origin == o.origin*/)
+                return;
+    }
+    facts.push(o);
+}
+
+function parseCatalogue(url, doc) {
+    try {
+        // store metadata for catalogue
+        for (var i=0;i<doc.metadata.length;i++) {
+            //console.log("CATL-FACT "+url+" "+doc.metadata[i].rel+" "+doc.metadata[i].val);
+            storeFact({
+                origin: url,
+                subject: url,
+                predicate: doc.metadata[i].rel,
+                object: doc.metadata[i].val
+            });
+        }
+    } catch(e) {
+        log(e);
+    }
+
+    try {
+        // store metadata for items and expand any catalogues
+        for (var i=0;i<doc.items.length;i++) {
+            var item = doc.items[i];
+            item.href = URI(item.href).absoluteTo(url).toString();    // fixup relative URL
+            // store that catalogue has an item
+            storeFact({
+                origin: url,
+                subject: url,
+                predicate: "urn:X-tsbiot:rels:hasResource",
+                object: item.href
+            });
+            for (var j=0;j<item.metadata.length;j++) {
+                var mdata = item.metadata[j];
+                //console.log("ITEM-FACT "+item.href+" "+mdata.rel+" "+mdata.val);
+                storeFact({
+                    origin: url,
+                    subject: item.href,
+                    predicate: mdata.rel,
+                    object: mdata.val
+                });
+            }
+        }
+    } catch(e) {
+        log(e);
+    }
+}
+
+function explore(url, cb) {
+    fetch(url, function(err, doc) {
+        if (err) {
+            log("Error in "+url+" ("+err+")");
+            cb(err); // done
+        } else {
+            parseCatalogue(url, doc);    // parse doc
+            cb(null); // done
+        }
+    });
+}
+
+function isConnected(from, to) {  // one hop
+    if (from == to)
+        return true;
+    for (var i=0;i<facts.length;i++) {
+        if (facts[i].subject == from &&
+            facts[i].object == to)
+            return true;
+        if (facts[i].subject == to &&
+            facts[i].object == from)
+            return true;
+    }
+    return false;
+}
+
+// http://stackoverflow.com/questions/6940103/how-do-i-make-an-array-with-unique-elements-i-e-remove-duplicates
+function ArrNoDupe(a) {
+    var temp = {};
+    for (var i = 0; i < a.length; i++)
+        temp[a[i]] = true;
+    var r = [];
+    for (var k in temp)
+        r.push(k);
+    return r;
+}
+
+// Look away now Mr. Dijkstra
+function reachable(from, to, maxHops) {
+    if (isConnected(from, to))
+        return true;
+    if (maxHops == 0)
+        return false;
+
+    var neighbours = [];
+    for (var i=0;i<facts.length;i++) {
+        if (isConnected(from, facts[i].subject))
+            neighbours.push(facts[i].subject);
+    }
+    neighbours = ArrNoDupe(neighbours);
+    for (var i=0;i<neighbours.length;i++) {
+        if (reachable(neighbours[i], to, maxHops-1))
+            return true;
+    }
+    return false;
+}
+
+function dumpGraph(filterFunc) {
+    graph.filterNodes(function(){return false});
+
+    // draw edges and nodes
+    for (var i=0;i<facts.length;i++) {
+        if (!reachable(cursor, facts[i].subject, parseInt($('#baconism').val(),10)-1))
+            continue;
+        if (!reachable(cursor, facts[i].object, parseInt($('#baconism').val(),10)-1))
+            continue;
+		graph.addNodes(facts[i].subject);
+
+        // If this does not look like a URI, make it a unique node
+        var prefix = "";    // FIXME
+        if (!facts[i].object.match("/^http/") && facts[i].object.match("/^mqtt/") && !facts[i].object.match(/"^urn:"/) && !facts[i].object.match(/^\//))
+            prefix = facts[i].subject+facts[i].predicate;
+        var node = new Springy.Node(prefix+facts[i].object, {label:facts[i].object});
+        graph.addNode(node);
+        graph.addEdges([facts[i].subject, prefix+facts[i].object, {label:facts[i].predicate}]);
+    }
+
+    // decorate nodes
+    for (var i=0;i<graph.nodes.length;i++) {
+        if (subjectHasPredicateAndObject(graph.nodes[i].id, 'urn:X-tsbiot:rels:isContentType', 'application/vnd.tsbiot.catalogue+json'))
+            graph.nodes[i].data.color = '#FFFF66';
+        if (graph.nodes[i].id == cursor)
+            graph.nodes[i].data.color = '#008000';
+    }
+}
+
+function updateSubscribeButton() {
+    $("#subscribe").attr("disabled", "disabled");
+    for (var i=0;i<facts.length;i++) {
+        if (facts[i].subject == cursor &&
+            facts[i].predicate == "urn:X-tsbiot:rels:eventSource") {
+            cursor_subURL = URI(facts[i].object).absoluteTo(cursor).toString();
+            $("#subscribe").removeAttr("disabled");
+            return;
+        }
+    }
+}
+
+// http://stackoverflow.com/questions/10214873/make-canvas-as-wide-and-as-high-as-parent
+function fitToContainer(canvas){
+    // Make it visually fill the positioned parent
+    canvas.style.width ='100%';
+    canvas.style.height='50%';
+    // ...then set the internal size to match
+    canvas.width  = canvas.offsetWidth;
+    canvas.height = canvas.offsetHeight;
+}
+
+function subjectHasPredicateAndObject(s, p, o) {
+    for (var i=0;i<facts.length;i++) {
+        if (facts[i].subject == s &&
+            facts[i].predicate == p &&
+            facts[i].object == o) {
+                return true;
+        }
+    }
+    return false;
+}
+
+function subscribe(url) {
+    log("Subscribing to "+url);
+    var source = new EventSource(url);
+
+    source.addEventListener('message', function(e) {
+        // turn item into a mini-catalogue
+        var o = JSON.parse(e.data);
+        o.href = URI(o.href).absoluteTo(url).toString();    // fixup relative URL
+        var cat = {
+            metadata:[],
+            items:[o]
+        };
+        // forget what we previously knew from this origin about this subject
+        var newfacts = [];
+        for (var i=0;i<facts.length;i++) {
+            if (!(facts[i].origin == cursor && facts[i].subject == o.href))
+                newfacts.push(facts[i]);
+        }
+        facts = newfacts;
+        parseCatalogue(cursor, cat);
+        dumpGraph();
+    }, false);
+
+    source.addEventListener('open', function(e) {
+        log("Subscription opened");
+    }, false);
+
+    source.addEventListener('error', function(e) {
+        if (e.readyState == EventSource.CLOSED)
+            log("Subscription closed");
+    }, false);
+}
+
+$(document).ready(function() { 
+    populateExamples();
+
+    $('#examples').on('change', function (e) {
+        var optionSelected = $("option:selected", this);
+        var valueSelected = this.value;
+        $('#url').val(this.value);
+    });
+
+    $("#go").click(function() {
+        cursor = $('#url').val();
+        explore($('#url').val(), function() {
+            log('explore complete');
+            dumpGraph();
+            updateSubscribeButton();
+        });
+    });
+
+    $("#clear").click(function() {
+        facts = [];
+        dumpGraph();
+    });
+
+    $("#subscribe").click(function() {
+        subscribe(cursor_subURL);
+    });
+
+    $("#inc_baconism").click(function() {
+        $('#baconism').val(parseInt($('#baconism').val(),10) + 1);
+        dumpGraph();
+    });
+    $("#dec_baconism").click(function() {
+        var n = parseInt($('#baconism').val(),10);
+        if (n > 1) {
+            $('#baconism').val(n - 1);
+            dumpGraph();
+        }
+    });
+
+
+    graph = new Springy.Graph({stiffness:10000, repulsion:10000, damping:2.0});
+    springy = jQuery('#graph').springy({
+        graph: graph,
+        nodeSelected: function(node) {
+            if (subjectHasPredicateAndObject(node.data.label, 'urn:X-tsbiot:rels:isContentType', 'application/vnd.tsbiot.catalogue+json')) {
+                cursor = node.data.label;
+                explore(node.data.label, function() {
+                    log('explore complete');
+                    dumpGraph();
+                    updateSubscribeButton();
+                });
+            }
+        }
+    });
+
+    var canvas = document.querySelector('canvas');
+    fitToContainer(canvas);
+});
+
+</script>
+</head>
+
+<body>
+    <h1>Catalogue Explorer</h1>
+
+    <p>
+    Interactive catalogue explorer. Click a <span class="yellow">yellow</span> catalogue node to expand. The <span class="green">green</span> node is the current cursor.
+    </p>
+
+    <p>
+        <form>
+            <select id="examples"></select>
+            URL:&nbsp;<input type="text" id="url" size=80 value="http://localhost:8001/cat/" />
+            <input type="button" id="go" value="Go" />
+            <input type="button" id="clear" value="Clear" />
+        </form>
+    </p>
+
+    <p>
+        <form>
+            Number of hops to show:&nbsp;
+            <input type="button" id="dec_baconism" value="-" />
+            <input type="text" id="baconism" size=4 value="3" />
+            <input type="button" id="inc_baconism" value="+" />
+            Subscribe:&nbsp;<input type="button" id="subscribe" value="Subscribe" disabled />
+        </form>
+    </p>
+
+    <p>
+        <div id="canvascontainer">
+            <canvas id="graph"/>
+        </div>
+    </p>
+
+    <p>
+        <div id="log"></div>
+    </p>
+
+    <hr>
+    <p>
+        Toby Jaffey <a href="mailto:toby@1248.io">toby@1248.io</a>
+    </p>
+</body>
+
+</html>

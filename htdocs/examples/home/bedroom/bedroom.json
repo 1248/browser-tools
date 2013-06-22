@@ -1,0 +1,40 @@
+{
+    "metadata":[
+        {
+            "rel":"urn:X-tsbiot:rels:isContentType",
+            "val":"application/vnd.tsbiot.catalogue+json"
+        },
+        {
+            "rel":"urn:X-tsbiot:rels:hasDescription:en",
+            "val":"bedroom catalogue"
+        }
+    ],
+    "items":[
+        {
+            "href":"/examples/home/bedroom/bed.txt",
+            "metadata":[
+                {
+                    "rel":"urn:X-tsbiot:rels:isContentType",
+                    "val":"text/plain"
+                },
+                {
+                    "rel":"urn:X-tsbiot:rels:hasDescription:en",
+                    "val":"bed"
+                }
+            ]
+        },
+        {
+            "href":"/examples/home/bedroom/dresser",
+            "metadata":[
+                {
+                    "rel":"urn:X-tsbiot:rels:isContentType",
+                    "val":"text/plain"
+                },
+                {
+                    "rel":"urn:X-tsbiot:rels:hasDescription:en",
+                    "val":"dresser"
+                }
+            ]
+        }
+    ]
+}
