@@ -22,6 +22,7 @@ h1 {color:red;}
 <script src="js/jquery.scrollTo-1.4.2-min.js"></script>
 <script type="text/javascript" src="js/URI.js"></script>
 <script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?key=AIzaSyDHADoA_flyLNzUs_W2TxuqF5EtDyZTpxM&sensor=true"></script>
+<script type="text/javascript" src="js/api.js"></script>
 <script>
 var unexplored = [];
 var explored = [];
@@ -31,12 +32,6 @@ var map;
 var markers = [];
 var infowindow = new google.maps.InfoWindow({});
 
-
-function log(msg) {
-    var log = $('#log');
-    log.append(msg + "<br/>\n");
-    log.scrollTo('100%');
-}
 
 function populateExamples() {
     $("#examples").append(new Option("Select example URL", ""));

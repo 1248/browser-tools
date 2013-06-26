@@ -21,17 +21,12 @@ h1 {color:red;}
 <script type="text/javascript" src="js/springy.js"></script>
 <script type="text/javascript" src="js/springyui.js"></script>
 <script type="text/javascript" src="js/diQuery-collapsiblePanel.js"></script>
+<script type="text/javascript" src="js/api.js"></script>
 <script>
 var unexplored = [];
 var explored = [];
 var facts = [];
 var graph, springy;
-
-function log(msg) {
-    var log = $('#log');
-    log.append(msg + "<br/>\n");
-    log.scrollTo('100%');
-}
 
 function populateExamples() {
     $("#examples").append(new Option("Select example URL", ""));
