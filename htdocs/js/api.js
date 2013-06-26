@@ -61,3 +61,38 @@ function ArrNoDupe(a) {
     return r;
 }
 
+
+function isConnected(from, to) {  // one hop
+    if (from == to)
+        return true;
+    for (var i=0;i<facts.length;i++) {
+        if (facts[i].subject == from &&
+            facts[i].object == to)
+            return true;
+        if (facts[i].subject == to &&
+            facts[i].object == from)
+            return true;
+    }
+    return false;
+}
+
+// Look away now Mr. Dijkstra
+function reachable(from, to, maxHops) {
+    if (isConnected(from, to))
+        return true;
+    if (maxHops == 0)
+        return false;
+
+    var neighbours = [];
+    for (var i=0;i<facts.length;i++) {
+        if (isConnected(from, facts[i].subject))
+            neighbours.push(facts[i].subject);
+    }
+    neighbours = ArrNoDupe(neighbours);
+    for (var i=0;i<neighbours.length;i++) {
+        if (reachable(neighbours[i], to, maxHops-1))
+            return true;
+    }
+    return false;
+}
+
