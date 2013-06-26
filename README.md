@@ -12,6 +12,7 @@ Contents
  * server/ a web server + HTTP proxy serving:
    * server/htdocs/crawler.html a browser-based catalogue crawler and knowledge graph viewer
    * server/htdocs/explorer.html an interactive browser-based catalogue explorer and knowledge graph viewer
+   * server/htdocs/map.html a browser-based catalogue mapping demo
 
 Run the server
 --------------

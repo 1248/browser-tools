@@ -1,6 +1,5 @@
 <html>
 <head>
-<link rel="stylesheet" type="text/css" href="css/diQuery-collapsiblePanel.css">
 <style type="text/css">
 h1 {color:red;}
 #log {
@@ -14,18 +13,24 @@ h1 {color:red;}
 #canvascontainer {
     border: 2px solid black;
 }
+.attrs {
+    font-family: monospace;
+    font-size: 9px;
+}
 </style>
 <script src="js/jquery-1.9.1.min.js"></script>
 <script src="js/jquery.scrollTo-1.4.2-min.js"></script>
 <script type="text/javascript" src="js/URI.js"></script>
-<script type="text/javascript" src="js/springy.js"></script>
-<script type="text/javascript" src="js/springyui.js"></script>
-<script type="text/javascript" src="js/diQuery-collapsiblePanel.js"></script>
+<script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?key=AIzaSyDHADoA_flyLNzUs_W2TxuqF5EtDyZTpxM&sensor=true"></script>
 <script>
 var unexplored = [];
 var explored = [];
 var facts = [];
-var graph, springy;
+var infoWindows = {};
+var map;
+var markers = [];
+var infowindow = new google.maps.InfoWindow({});
+
 
 function log(msg) {
     var log = $('#log');
@@ -149,70 +154,11 @@ function crawl(cb) {
     }
 }
 
-function dumpGraph(filterFunc) {
-    graph.filterNodes(function(){return false});
-
-    for (var i=0;i<facts.length;i++) {
-        if (filterFunc === undefined || filterFunc(facts[i])) {
-		    graph.addNodes(facts[i].subject);
-
-            // If this does not look like a URI, make it a unique node
-            var prefix = "";    // FIXME
-            if (!facts[i].object.match("/^http/") && facts[i].object.match("/^mqtt/") && !facts[i].object.match(/"^urn:"/) && !facts[i].object.match(/^\//))
-                prefix = facts[i].subject+facts[i].predicate;
-console.log(prefix+facts[i].object);
-            var node = new Springy.Node(prefix+facts[i].object, {label:facts[i].object});
-            graph.addNode(node);
-            graph.addEdges([facts[i].subject, prefix+facts[i].object, {label:facts[i].predicate}]);
-        }
-    }
-}
-
-// http://stackoverflow.com/questions/6940103/how-do-i-make-an-array-with-unique-elements-i-e-remove-duplicates
-function ArrNoDupe(a) {
-    var temp = {};
-    for (var i = 0; i < a.length; i++)
-        temp[a[i]] = true;
-    var r = [];
-    for (var k in temp)
-        r.push(k);
-    return r;
-}
-
-function populateForm() {
-    var predicates = [];
-    var objects = [];
-    var subjects = [];
-    for (var i=0;i<facts.length;i++) {
-        predicates.push(facts[i].predicate);
-        objects.push(facts[i].object);
-        subjects.push(facts[i].subject);
-    }
-    predicates = ArrNoDupe(predicates);
-    objects = ArrNoDupe(objects);
-    subjects = ArrNoDupe(subjects);
-    $("#predicates").html("");
-    $("#objects").html("");
-    $("#subjects").html("");
-    for (var i=0;i<predicates.length;i++)
-        $("#predicates").append(new Option(predicates[i], predicates[i]));
-    for (var i=0;i<subjects.length;i++)
-        $("#subjects").append(new Option(subjects[i], subjects[i]));
-    for (var i=0;i<objects.length;i++)
-        $("#objects").append(new Option(objects[i], objects[i]));
-
-    $("#filter_all").removeAttr("disabled");
-    $("#filter_by_predicate").removeAttr("disabled");
-    $("#filter_by_object").removeAttr("disabled");
-    $("#filter_by_subject").removeAttr("disabled");
-}
-
 function startcrawl(url) {
     unexplored.push(url);
     crawl(function() {
         log('Crawling complete');
-        dumpGraph();
-        populateForm();
+        plotOnMap(searchForLocations());
     });
 }
 
@@ -227,10 +173,43 @@ function fitToContainer(canvas){
 }
 
 
-$(document).ready(function() { 
-    populateExamples();
+function initMap() {
+    var myOptions = {
+        center: new google.maps.LatLng(0, 0),
+        zoom: 2,
+        mapTypeId: google.maps.MapTypeId.HYBRID
+    };
+    map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
+}
 
-    $(".collapsibleContainer").collapsiblePanel();
+function createMarker(lat, long, title, contentString, i) {
+    markers[i] = new google.maps.Marker({
+        position: new google.maps.LatLng(lat, long),
+        map: map, 
+        title:title
+    });
+
+    google.maps.event.addListener(markers[i], 'click', function() {
+        infowindow.setContent(contentString);
+        infowindow.open(map, markers[i]);
+    });
+}
+
+function plotOnMap(locs) {
+    for (var i=0;i<locs.length;i++) {
+        contentString = '<table class="attrs">';
+        for (key in locs[i])
+            contentString += '<tr><td><b>'+key+'</b></td><td>'+locs[i][key]+'</td></tr>';
+        contentString += '</table>';
+        createMarker(locs[i].latitude, locs[i].longitude, locs[i]['urn:X-tsbiot:rels:hasDescription:en'], contentString, markers.length);
+    }
+}
+
+
+
+$(document).ready(function() { 
+    initMap();
+    populateExamples();
 
     $('#examples').on('change', function (e) {
         var optionSelected = $("option:selected", this);
@@ -242,52 +221,12 @@ $(document).ready(function() {
     $("#crawl").click(function() {
         startcrawl($('#url').val());
     });
-    $("#crawlreplace").click(function() {
+    $("#clear").click(function() {
         unexplored = [];
         explored = [];
-        facts = []; // wipe known facts first
-        startcrawl($('#url').val());
+        facts = []; // wipe known facts
+        initMap();
     });
-
-    $("#filter_by_predicate").attr("disabled", "disabled");
-    $("#filter_by_predicate").click(function() {
-        dumpGraph(function(fact) {
-            if (fact.predicate == $('#predicates option:selected').html())
-                return true;
-            return false;
-        });
-    });
-    $("#filter_by_object").attr("disabled", "disabled");
-    $("#filter_by_object").click(function() {
-        dumpGraph(function(fact) {
-            if (fact.object == $('#objects option:selected').html())
-                return true;
-            return false;
-        });
-    });
-    $("#filter_by_subject").attr("disabled", "disabled");
-    $("#filter_by_subject").click(function() {
-        dumpGraph(function(fact) {
-            if (fact.subject == $('#subjects option:selected').html())
-                return true;
-            return false;
-        });
-    });
-    $("#filter_all").attr("disabled", "disabled");
-    $("#filter_all").click(function() {
-        dumpGraph();
-    });
-
-    graph = new Springy.Graph({stiffness:10000, repulsion:10000, damping:2.0});
-    springy = jQuery('#graph').springy({
-        graph: graph,
-        nodeSelected: function(node){
-          console.log('Node selected: ' + JSON.stringify(node.data));
-        }
-    });
-
-    var canvas = document.querySelector('canvas');
-    fitToContainer(canvas);
 });
 
 // returns [{resource:,longitude:,latitude:}]
@@ -323,9 +262,8 @@ function searchForLocations() {
 </head>
 
 <body>
-    <h1>Catalogue Crawler</h1>
+    <h1>Mapping Catalogue Crawler</h1>
     <p>
-        This is a crawler and visualisation tool for IoT catalogues in the application/vnd.tsbiot.catalogue.json format. Given a starting URL, it will crawl any linked catalogues then render a directed graph of discovered relationships. The nodes and edges shown in the graph can be filtered.
     </p>
     <p>
         Select an example catalogue from the box below, or enter the URL of any public catalogue and click "crawl".<br>
@@ -336,57 +274,19 @@ function searchForLocations() {
         <form>
             <select id="examples"></select>
             URL:&nbsp;<input type="text" id="url" size=80 value="Select example from dropdown or type URL" />
-            <input type="button" id="crawl" value="Crawl (and add to existing graph)" />
-            <input type="button" id="crawlreplace" value="Crawl (and replace existing graph)" />
+            <input type="button" id="crawl" value="Crawl" />
+            <input type="button" id="clear" value="Clear" />
         </form>
     </p>
 
-    <div class="collapsibleContainer" title="Filter graph (click to toggle)">
-        <p>
-            The filters act independently.<br/>
-            The graph is in the form: <b>subject --predicate--&gt; object</b><br/>
-            The urn:X-tsbiot:rels:hasResource is automatically added to connect each catalogue with its items<br/>
-
-        </p>
-        <p>
-            <form>
-                <table>
-                    <tr>
-                        <td><select id="subjects"></select></td>
-                        <td><input type="button" id="filter_by_subject" value="Filter by subject (what do we know about X?)"/></td>
-                    </tr>
-                    <tr>
-                        <td><select id="predicates"></select></td>
-                        <td><input type="button" id="filter_by_predicate" value="Filter by predicate (who uses relationship Y?)"/></td>
-                    </tr>
-                    <tr>
-                        <td><select id="objects"></select></td>
-                        <td><input type="button" id="filter_by_object" value="Filter by object (who has a relationship to Z?)"/></td>
-                    </tr>
-                    <tr>
-                        <td></td>
-                        <td><input type="button" id="filter_all" value="Remove filter"/></td>
-                    </tr>
-                </table>
-            </form>
-        </p>
-    </div>
-
     <p>
-        <i>Drag graph nodes around for a clearer view</i>
-    </p>
-    <p>
-        <div id="canvascontainer">
-            <canvas id="graph"/>
-        </div>
+        The map knows about: "http://www.w3.org/2003/01/geo/wgs84_pos#long" and "http://www.w3.org/2003/01/geo/wgs84_pos#lat"
+        <div id="map_canvas" style="width:480px; height:480px;"></div>
     </p>
 
-    <div class="collapsibleContainer" title="Activity and error log (click to toggle)">
-        <p>
-            <div id="log"></div>
-        </p>
-    </div>
-
+    <p>
+        <div id="log"></div>
+    </p>
 
     <hr>
     <p>
