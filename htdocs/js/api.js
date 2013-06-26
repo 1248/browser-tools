@@ -1,3 +1,4 @@
+var facts = [];
 
 function log(msg) {
     var log = $('#log');
@@ -39,5 +40,14 @@ function fetch(url, cb) {
     });
 }
 
-
+function storeFact(o) {
+    // only store unique facts (FIXME, slow)
+    for (var i=0;i<facts.length;i++) {
+        if (facts[i].subject == o.subject &&
+            facts[i].predicate == o.predicate &&
+            facts[i].object == o.object)
+                return;
+    }
+    facts.push(o);
+}
 

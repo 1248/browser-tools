@@ -27,24 +27,10 @@ h1 {color:red;}
 <script type="text/javascript" src="js/springy.js"></script>
 <script type="text/javascript" src="js/springyui.js"></script>
 <script type="text/javascript" src="js/api.js"></script>
-
 <script>
-var facts = [];
 var graph, springy;
 var cursor = "";
 var cursor_subURL = "";
-
-function storeFact(o) {
-    // only store unique facts
-    for (var i=0;i<facts.length;i++) {
-        if (facts[i].subject == o.subject &&
-            facts[i].predicate == o.predicate &&
-            facts[i].object == o.object /* &&
-            facts[i].origin == o.origin*/)
-                return;
-    }
-    facts.push(o);
-}
 
 function parseCatalogue(url, doc) {
     try {

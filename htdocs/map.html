@@ -26,24 +26,10 @@ h1 {color:red;}
 <script>
 var unexplored = [];
 var explored = [];
-var facts = [];
 var infoWindows = {};
 var map;
 var markers = [];
 var infowindow = new google.maps.InfoWindow({});
-
-
-
-function storeFact(o) {
-    // only store unique facts (FIXME, slow)
-    for (var i=0;i<facts.length;i++) {
-        if (facts[i].subject == o.subject &&
-            facts[i].predicate == o.predicate &&
-            facts[i].object == o.object)
-                return;
-    }
-    facts.push(o);
-}
 
 function expandCatalogue(url, doc) {
     try {
