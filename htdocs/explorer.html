@@ -102,17 +102,6 @@ function isConnected(from, to) {  // one hop
     return false;
 }
 
-// http://stackoverflow.com/questions/6940103/how-do-i-make-an-array-with-unique-elements-i-e-remove-duplicates
-function ArrNoDupe(a) {
-    var temp = {};
-    for (var i = 0; i < a.length; i++)
-        temp[a[i]] = true;
-    var r = [];
-    for (var k in temp)
-        r.push(k);
-    return r;
-}
-
 // Look away now Mr. Dijkstra
 function reachable(from, to, maxHops) {
     if (isConnected(from, to))
