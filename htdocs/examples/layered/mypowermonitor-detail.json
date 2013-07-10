@@ -1,5 +1,5 @@
 {
-    "metadata":[
+    "item-metadata":[
         {
             "rel":"urn:X-tsbiot:rels:isContentType",
             "val":"application/vnd.tsbiot.catalogue+json"
@@ -12,7 +12,7 @@
     "items":[
         {
             "href":"mqtt://broker.com/mypowermonitor?qos=1",
-            "metadata":[
+            "i-object-metadata":[
                 {
                     "rel":"urn:X-tsbiot:rels:hasDescription:en",
                     "val":"Andy's power monitor"

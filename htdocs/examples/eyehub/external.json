@@ -1,5 +1,5 @@
 {
-    "metadata":[
+    "item-metadata":[
         {
             "rel":"urn:X-tsbiot:rels:isContentType",
             "val":"application/vnd.tsbiot.catalogue+json"
@@ -16,7 +16,7 @@
     "items":[
         {
             "href":"https://eyehubhost.com/data/eyehub1/dms/dm123/devices/d456",
-            "metadata":[
+            "i-object-metadata":[
                 {
                     "rel":"urn:X-tsbiot:rels:hasDescription:en",
                     "val":"Resource_49_BA_01_light_sensor"

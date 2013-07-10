@@ -1,5 +1,5 @@
 {
-    "metadata":[
+    "item-metadata":[
         {
             "rel":"urn:X-tsbiot:rels:isContentType",
             "val":"application/vnd.tsbiot.catalogue+json"
@@ -12,7 +12,7 @@
     "items":[
         {
             "href":"/examples/home/kitchen/kitchen.json",
-            "metadata":[
+            "i-object-metadata":[
                 {
                     "rel":"urn:X-tsbiot:rels:isContentType",
                     "val":"application/vnd.tsbiot.catalogue+json"
@@ -25,7 +25,7 @@
         },
         {
             "href":"/examples/home/bedroom/bedroom.json",
-            "metadata":[
+            "i-object-metadata":[
                 {
                     "rel":"urn:X-tsbiot:rels:isContentType",
                     "val":"application/vnd.tsbiot.catalogue+json"

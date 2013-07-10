@@ -1,5 +1,5 @@
 {
-    "metadata":[
+    "item-metadata":[
         {
             "rel":"urn:X-tsbiot:rels:isContentType",
             "val":"application/vnd.tsbiot.catalogue+json"
