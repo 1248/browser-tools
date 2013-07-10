@@ -35,13 +35,13 @@ var cursor_subURL = "";
 function parseCatalogue(url, doc) {
     try {
         // store metadata for catalogue
-        for (var i=0;i<doc.metadata.length;i++) {
-            //console.log("CATL-FACT "+url+" "+doc.metadata[i].rel+" "+doc.metadata[i].val);
+        for (var i=0;i<doc['item-metadata'].length;i++) {
+            //console.log("CATL-FACT "+url+" "+doc['item-metadata'][i].rel+" "+doc['item-metadata'][i].val);
             storeFact({
                 origin: url,
                 subject: url,
-                predicate: doc.metadata[i].rel,
-                object: doc.metadata[i].val
+                predicate: doc['item-metadata'][i].rel,
+                object: doc['item-metadata'][i].val
             });
         }
     } catch(e) {
@@ -60,8 +60,8 @@ function parseCatalogue(url, doc) {
                 predicate: "urn:X-tsbiot:rels:hasResource",
                 object: item.href
             });
-            for (var j=0;j<item.metadata.length;j++) {
-                var mdata = item.metadata[j];
+            for (var j=0;j<item['i-object-metadata'].length;j++) {
+                var mdata = item['i-object-metadata'][j];
                 //console.log("ITEM-FACT "+item.href+" "+mdata.rel+" "+mdata.val);
                 storeFact({
                     origin: url,
@@ -159,7 +159,7 @@ function subscribe(url) {
         var o = JSON.parse(e.data);
         o.href = URI(o.href).absoluteTo(url).toString();    // fixup relative URL
         var cat = {
-            metadata:[],
+            "item-metadata":[],
             items:[o]
         };
         // forget what we previously knew from this origin about this subject

@@ -30,12 +30,11 @@ var graph, springy;
 function expandCatalogue(url, doc) {
     try {
         // store metadata for catalogue
-        for (var i=0;i<doc.metadata.length;i++) {
-            //console.log("CATL-FACT "+url+" "+doc.metadata[i].rel+" "+doc.metadata[i].val);
+        for (var i=0;i<doc['item-metadata'].length;i++) {
             storeFact({
                 subject: url,
-                predicate: doc.metadata[i].rel,
-                object: doc.metadata[i].val
+                predicate: doc['item-metadata'][i].rel,
+                object: doc['item-metadata'][i].val
             });
         }
     } catch(e) {
@@ -53,8 +52,8 @@ function expandCatalogue(url, doc) {
                 predicate: "urn:X-tsbiot:rels:hasResource",
                 object: item.href
             });
-            for (var j=0;j<item.metadata.length;j++) {
-                var mdata = item.metadata[j];
+            for (var j=0;j<item['i-object-metadata'].length;j++) {
+                var mdata = item['i-object-metadata'][j];
                 //console.log("ITEM-FACT "+item.href+" "+mdata.rel+" "+mdata.val);
                 storeFact({
                     subject: item.href,
