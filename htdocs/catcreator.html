@@ -1,0 +1,176 @@
+<html lang="en">
+<head>
+<link rel="stylesheet" type="text/css" href="css/diQuery-collapsiblePanel.css">
+<style type="text/css">
+h1 {color:red;}
+#log {
+    height: 15%;
+    width:100%; 
+    padding:10px;
+    background:#808080;
+    overflow:scroll;
+    font-family: monospace;
+}
+.green {
+    background-color:#008000;
+}
+.yellow {
+    background-color:#FFFF66;
+}
+#canvascontainer {
+    border: 2px solid black;
+}
+</style>
+<script src="js/jquery-1.9.1.min.js"></script>
+<script src="js/jquery.scrollTo-1.4.2-min.js"></script>
+<script type="text/javascript" src="js/URI.js"></script>
+<script type="text/javascript" src="js/api.js"></script>
+
+<script>
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-41905116-1', '1248.io');
+ga('send', 'pageview');
+
+</script>
+
+<script>
+var user_item = {
+    "item-metadata":[
+        {
+            "rel":"urn:X-tsbiot:rels:hasDescription:en",
+            "val":"A catalogue"
+        },
+        {
+            "rel":"urn:X-tsbiot:rels:isContentType",
+            "val":"application/vnd.tsbiot.catalogue+json"
+        },
+        {
+            "rel":"urn:X-tsbiot:rels:supportsSearch",
+            "val":"urn:X-tsbiot:search:simple"
+        }
+    ],
+    "items": []
+};
+
+function refreshRaw() {
+    $('#raw').val(JSON.stringify(user_item, undefined, 4));
+}
+
+function populateItem() {
+    var metadataHTML = '<ul>';
+    for (var i=0;i<user_item['item-metadata'].length;i++) {
+        var metadataItem = user_item['item-metadata'][i];
+        var relHTML = '<input type="text" id="rel_'+i+'" size=40 value="'+metadataItem.rel+'"/>';
+        var valHTML = '<input type="text" id="val_'+i+'" size=40 value="'+metadataItem.val+'"/>';
+        var metadataItemHTML = relHTML + ' = ' + valHTML;
+        var removeButtonHTML = '<input type="button" id="remove_'+i+'" value="X" />'
+        metadataItemHTML += removeButtonHTML;
+        var divHTML = '<div id="'+'div_'+i+'">' + metadataItemHTML + '</div>';
+        metadataHTML += '<li>' + divHTML + '</li>';
+    }
+    metadataHTML += '</ul>';
+
+    $('#metadata').html(metadataHTML);
+
+    for (var i=0;i<user_item['item-metadata'].length;i++) {
+        $('#remove_'+i).click(function() {
+            var index = ($(this).attr('id').split('remove_'))[1];
+            user_item['item-metadata'].splice(index, 1);
+            refreshRaw();
+            populateItem();
+        });
+        $('#rel_'+i).on('keyup', function (e) {
+            var index = ($(this).attr('id').split('rel_'))[1];
+            user_item['item-metadata'][index].rel = $(this).val();
+            refreshRaw();
+        });
+        $('#val_'+i).on('keyup', function (e) {
+            var index = ($(this).attr('id').split('val_'))[1];
+            user_item['item-metadata'][index].val = $(this).val();
+            refreshRaw();
+        });
+    }
+}
+
+$(document).ready(function() { 
+    populateItem();
+    refreshRaw();
+
+    $('#add_metadata').click(function() {
+        user_item['item-metadata'].push({rel:"", val:""});
+        populateItem();
+    });
+
+    $('#post_item').click(function() {
+        var url = $('#cat_url').val();
+        $.ajax({
+            type: 'POST',
+            url: '/post?url=' + encodeURI(url),
+            data: JSON.stringify(user_item),
+            contentType: "application/json; charset=utf-8",
+            dataType: 'json',
+            success: function(body, textStatus, xhr) {
+                log(xhr.status + ' ' + xhr.statusText);
+            },
+            error: function(xhr, textStatus, err) {
+                log(xhr.status + ' ' + xhr.statusText);
+            }
+        });
+    });
+
+    $('#examples').on('change', function (e) {
+        var optionSelected = $("option:selected", this);
+        var valueSelected = this.value;
+        $('#url').val(this.value);
+    });
+
+    $("#go").click(function() {
+        browse($('#url').val(), function() {
+            log('browse complete');
+        });
+    });
+
+    $("#back").click(function() {
+        if (history.length > 1) {
+            history.pop();  // throw away top
+            url = history.pop();
+            browse(url, function() {
+                log('browse complete');
+            });
+        }
+    });
+});
+
+</script>
+</head>
+
+<body>
+    <h1>Catalogue Creator</h1>
+    <p>A simple tool to allow creation of empty catalogues</p>
+    <hr>
+    <p>
+        <div id="metadata"></div>
+        <input type="button" id="add_metadata" value="Add more metadata" /><br>
+    </p>
+    <hr>
+    <textarea disabled readonly id="raw" cols=80 rows=30></textarea>
+    <p>
+        <input type="text" id="cat_url" size=80 value="http://dev.1248.io:8001/cat" />
+        <input type="button" id="post_item" value="Post" />
+    </p>
+
+    <p>
+        <div id="log"></div>
+    </p>
+
+    <hr>
+    <p>
+        Toby Jaffey <a href="mailto:toby@1248.io">toby@1248.io</a>
+    </p>
+</body>
+
+</html>
