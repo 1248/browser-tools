@@ -66,7 +66,9 @@ function parseCatalogue(url, doc) {
             itemMetadataListHTML += '</ul>';
 
             var link = '<a href="javascript:browse(\''+item.href+'\', function(){})">'+item.href+'</a>';
-            itemListHTML += '<li>'+link+'</li>';
+            var editlink = '<a href="itemcreator.html?cat_url='+encodeURI(url)+'&href='+encodeURI(item.href)+'" target="_blank"><strong>[edit]</strong></a>';
+
+            itemListHTML += '<li>'+link+' '+editlink+'</li>';
             itemListHTML += itemMetadataListHTML;
         }
         itemListHTML += '</ul>';
@@ -133,19 +135,17 @@ $(document).ready(function() {
     <p>
         <form>
             <select id="examples"></select>
-            URL:&nbsp;<input type="text" id="url" size=80 value="Enter a URL" />
+            URL:&nbsp;<input type="text" id="url" size=80 value="http://dev.1248.io:8001/cats" />
             <input type="button" id="go" value="Go" />
             <input type="button" id="back" value="Back" />
         </form>
     </p>
     <p>
-        <div id="log"></div>
-    </p>
-
-    <p>
         <div id="browser"></div>
     </p>
-
+    <p>
+        <div id="log"></div>
+    </p>
     <hr>
     <p>
         Toby Jaffey <a href="mailto:toby@1248.io">toby@1248.io</a>
