@@ -1,0 +1,155 @@
+<html lang="en">
+<head>
+<link rel="stylesheet" type="text/css" href="css/diQuery-collapsiblePanel.css">
+<style type="text/css">
+h1 {color:red;}
+#log {
+    height: 15%;
+    width:100%; 
+    padding:10px;
+    background:#808080;
+    overflow:scroll;
+    font-family: monospace;
+}
+.green {
+    background-color:#008000;
+}
+.yellow {
+    background-color:#FFFF66;
+}
+#canvascontainer {
+    border: 2px solid black;
+}
+</style>
+<script src="js/jquery-1.9.1.min.js"></script>
+<script src="js/jquery.scrollTo-1.4.2-min.js"></script>
+<script type="text/javascript" src="js/URI.js"></script>
+<script type="text/javascript" src="js/api.js"></script>
+
+<script>
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-41905116-1', '1248.io');
+ga('send', 'pageview');
+
+</script>
+
+<script>
+var history = [];
+
+function parseCatalogue(url, doc) {
+    var catMetadataListHTML = '<ul>';
+    try {
+        // store metadata for catalogue
+        for (var i=0;i<doc['item-metadata'].length;i++) {
+            catMetadataListHTML += '<li>' + doc['item-metadata'][i].rel + ' = ' + doc['item-metadata'][i].val + '</li>';
+        }
+    } catch(e) {
+        log(e);
+    }
+    catMetadataListHTML += '</ul>';
+
+    var itemListHTML = '<ul>';
+    try {
+        for (var i=0;i<doc.items.length;i++) {
+            var item = doc.items[i];
+            item.href = URI(item.href).absoluteTo(url).toString();    // fixup relative URL
+
+            var itemMetadataListHTML = '<ul>';
+            for (var j=0;j<item['i-object-metadata'].length;j++) {
+                var mdata = item['i-object-metadata'][j];
+                itemMetadataListHTML += '<li>' + mdata.rel + ' = ' + mdata.val + '</li>';
+            }
+            itemMetadataListHTML += '</ul>';
+
+            var link = '<a href="javascript:browse(\''+item.href+'\', function(){})">'+item.href+'</a>';
+            itemListHTML += '<li>'+link+'</li>';
+            itemListHTML += itemMetadataListHTML;
+        }
+        itemListHTML += '</ul>';
+
+        var listHTML = '<ul>';
+        listHTML += '<li>Catalogue Metadata</li>';
+        listHTML += catMetadataListHTML;
+        listHTML += '<li>Items</li>'
+        listHTML += itemListHTML;
+        listHTML += '</ul>';
+
+        $('#browser').html(listHTML);
+    } catch(e) {
+        log(e);
+    }
+}
+
+function browse(url, cb) {
+    fetch(url, function(err, doc) {
+        if (err) {
+            log("Error in "+url+" ("+err+")");
+            cb(err); // done
+        } else {
+            history.push(url);
+            $('#url').val(url);
+            parseCatalogue(url, doc);    // parse doc
+            cb(null); // done
+        }
+    });
+}
+
+$(document).ready(function() { 
+    populateExamples();
+
+    $('#examples').on('change', function (e) {
+        var optionSelected = $("option:selected", this);
+        var valueSelected = this.value;
+        $('#url').val(this.value);
+    });
+
+    $("#go").click(function() {
+        browse($('#url').val(), function() {
+            log('browse complete');
+        });
+    });
+
+    $("#back").click(function() {
+        if (history.length > 1) {
+            history.pop();  // throw away top
+            url = history.pop();
+            browse(url, function() {
+                log('browse complete');
+            });
+        }
+    });
+});
+
+</script>
+</head>
+
+<body>
+    <h1>Catalogue Browser</h1>
+
+    <p>
+        <form>
+            <select id="examples"></select>
+            URL:&nbsp;<input type="text" id="url" size=80 value="Enter a URL" />
+            <input type="button" id="go" value="Go" />
+            <input type="button" id="back" value="Back" />
+        </form>
+    </p>
+    <p>
+        <div id="log"></div>
+    </p>
+
+    <p>
+        <div id="browser"></div>
+    </p>
+
+    <hr>
+    <p>
+        Toby Jaffey <a href="mailto:toby@1248.io">toby@1248.io</a>
+    </p>
+</body>
+
+</html>

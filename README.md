@@ -13,6 +13,7 @@ Contents
    * server/htdocs/crawler.html a browser-based catalogue crawler and knowledge graph viewer
    * server/htdocs/explorer.html an interactive browser-based catalogue explorer and knowledge graph viewer
    * server/htdocs/map.html a browser-based catalogue mapping demo
+   * server/htdocs/browser.html a browser-based catalogue text browser demo
 
 Run the server
 --------------
