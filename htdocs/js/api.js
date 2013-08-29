@@ -23,6 +23,28 @@ function populateExamples() {
     });
 }
 
+function del(url, key, cb) {
+    log('-> DELETE ' + url);
+    $.ajax({
+        beforeSend: function(xhr){
+            if (key !== "")
+                xhr.setRequestHeader("Authorization", "Basic " + Base64.encode(key));
+        },
+        type: 'DELETE',
+        url: '/del?url='+encodeURI(url),
+        dataType: 'json',
+        success: function(body, textStatus, xhr) {
+            log('<- ' + xhr.status + ' ' + xhr.statusText);
+            cb(null, body);
+        },
+        error: function(xhr, textStatus) {
+            log('<- ' + xhr.status + ' ' + xhr.statusText);
+            if (xhr.status == 200)
+                cb(null, null);
+        }
+    });
+}
+
 function fetch(url, key, cb) {
     log('-> GET ' + url);
     $.ajax({
@@ -37,8 +59,8 @@ function fetch(url, key, cb) {
             log('<- ' + xhr.status + ' ' + xhr.statusText);
             cb(null, body);
         },
-        error: function() {
-            log("Error fetching "+url);
+        error: function(xhr, textStatus) {
+            log('<- Error ' + xhr.status + ' ' + xhr.statusText);
         }
     });
 }

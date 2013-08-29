@@ -22,6 +22,17 @@ ga('send', 'pageview');
 <script>
 var history = [];
 
+function deleteItem(cat_url, item_url) {
+    var url = cat_url + "?href=" + encodeURI(item_url);
+    del(url, $('#key').val(), function(err) {
+        if (!err) {
+            browse($('#url').val(), function() {
+                log('browse complete');
+            });
+        }
+    });
+}
+
 function parseCatalogue(url, doc) {
     var catMetadataListHTML = '<ul>';
     try {
@@ -57,8 +68,9 @@ function parseCatalogue(url, doc) {
                 link = '<a href="'+item.href+'">'+item.href+'</a>';
 
             var editlink = '<a href="itemcreator.html?key='+encodeURIComponent($('#key').val())+'&cat_url='+encodeURI(url)+'&href='+encodeURI(item.href)+'" target="_blank"><strong>[edit item]</strong></a>';
+            var deletelink = '<a href="javascript:deleteItem(\''+url+'\',\''+item.href+'\');"><strong>[delete item]</strong></a>';
 
-            itemListHTML += '<li>'+link+' '+editlink+'</li>';
+            itemListHTML += '<li>'+link+' '+editlink+' '+deletelink+'</li>';
             itemListHTML += itemMetadataListHTML;
         }
         itemListHTML += '</ul>';

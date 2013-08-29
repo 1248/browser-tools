@@ -30,6 +30,6 @@ Visit http://localhost:8000/
 Why do I need to run the server?
 --------------------------------
 
-Almost all of the application code is client-side. The server provides an HTTP proxy (relays GET requests to /fetch?url= and POST requests on /post?url=) to work around the cross-domain constraints of Javascript requests.
+Almost all of the application code is client-side. The server provides an HTTP proxy (relays GET requests to /fetch?url=, POST requests on /post?url= and DELETE requests on /del?url=) to work around the cross-domain constraints of Javascript requests.
 
 
