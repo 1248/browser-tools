@@ -63,10 +63,12 @@ function parseCatalogue(url, doc) {
         }
         itemListHTML += '</ul>';
 
+        var createitemlink = '<a href="itemcreator.html?key='+encodeURIComponent($('#key').val())+'&cat_url='+encodeURI(url)+'" target="_blank"><strong>[add new item]</strong></a>';
+
         var listHTML = '<ul>';
         listHTML += '<li>Catalogue Metadata</li>';
         listHTML += catMetadataListHTML;
-        listHTML += '<li>Items</li>'
+        listHTML += '<li>Items '+createitemlink+'</li>'
         listHTML += itemListHTML;
         listHTML += '</ul>';
 
@@ -110,6 +112,10 @@ $(document).ready(function() {
         });
     });
 
+    $("#newcat").click(function() {
+        window.open('catcreator.html?key='+encodeURIComponent($('#key').val())+'&cat_url='+encodeURI("http://dev.1248.io:8001/cats/CATNAMEHERE"), "_blank");
+    });
+
     $("#back").click(function() {
         if (history.length > 1) {
             history.pop();  // throw away top
@@ -137,7 +143,7 @@ $(document).ready(function() {
         </form>
     </p>
         <input type="button" id="back" value="Back" />&nbsp;
-        <a href="catcreator.html" target="_blank">[Create new catalogue]</a>&nbsp;
+        <input type="button" id="newcat" value="Create new catalogue"/>
     <p>
         <div id="browser"></div>
     </p>
