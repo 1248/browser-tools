@@ -8,6 +8,7 @@
 <script type="text/javascript" src="js/springy.js"></script>
 <script type="text/javascript" src="js/springyui.js"></script>
 <script type="text/javascript" src="js/diQuery-collapsiblePanel.js"></script>
+<script type="text/javascript" src="js/base64.js"></script>
 <script type="text/javascript" src="js/api.js"></script>
 
 <script>
@@ -77,7 +78,7 @@ function crawl(cb) {
         var url = unexplored.pop();
 
         if (explored.indexOf(url) == -1) {   // not seen before
-            fetch(url, function(err, doc) {
+            fetch(url, $('#key').val(), function(err, doc) {
                 if (err) {
                     log("Error in "+url+" ("+err+")");
                     explored.push(url); // was bad, but explored
@@ -275,6 +276,7 @@ function searchForLocations() {
         <form>
             <select id="examples"></select>
             URL:&nbsp;<input type="text" id="url" size=80 value="Select example from dropdown or type URL" />
+            Key&nbsp;<input type="text" id="key" size=40 value="" />
             <input type="button" id="crawl" value="Crawl (and add to existing graph)" />
             <input type="button" id="crawlreplace" value="Crawl (and replace existing graph)" />
         </form>

@@ -6,7 +6,6 @@ function log(msg) {
     log.scrollTo('100%');
 }
 
-
 function populateExamples() {
     $("#examples").append(new Option("Select example URL", ""));
 
@@ -24,9 +23,13 @@ function populateExamples() {
     });
 }
 
-function fetch(url, cb) {
+function fetch(url, key, cb) {
     log('-> GET ' + url);
     $.ajax({
+        beforeSend: function(xhr){
+            if (key !== "")
+                xhr.setRequestHeader("Authorization", "Basic " + Base64.encode(key));
+        },
         type: 'GET',
         url: '/fetch?url='+encodeURI(url),
         dataType: 'json',

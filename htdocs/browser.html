@@ -5,6 +5,7 @@
 <script src="js/jquery-1.9.1.min.js"></script>
 <script src="js/jquery.scrollTo-1.4.2-min.js"></script>
 <script type="text/javascript" src="js/URI.js"></script>
+<script type="text/javascript" src="js/base64.js"></script>
 <script type="text/javascript" src="js/api.js"></script>
 
 <script>
@@ -55,7 +56,7 @@ function parseCatalogue(url, doc) {
             else
                 link = '<a href="'+item.href+'">'+item.href+'</a>';
 
-            var editlink = '<a href="itemcreator.html?cat_url='+encodeURI(url)+'&href='+encodeURI(item.href)+'" target="_blank"><strong>[edit item]</strong></a>';
+            var editlink = '<a href="itemcreator.html?key='+encodeURIComponent($('#key').val())+'&cat_url='+encodeURI(url)+'&href='+encodeURI(item.href)+'" target="_blank"><strong>[edit item]</strong></a>';
 
             itemListHTML += '<li>'+link+' '+editlink+'</li>';
             itemListHTML += itemMetadataListHTML;
@@ -78,7 +79,7 @@ function parseCatalogue(url, doc) {
 }
 
 function browse(url, cb) {
-    fetch(url, function(err, doc) {
+    fetch(url, $('#key').val(), function(err, doc) {
         if (err) {
             log("Error in "+url+" ("+err+")");
             cb(err); // done
@@ -133,6 +134,7 @@ $(document).ready(function() {
         <form>
             <select id="examples"></select>
             URL:&nbsp;<input type="text" id="url" size=80 value="http://dev.1248.io:8001/cats" />
+            Key&nbsp;<input type="text" id="key" size=40 value="" />
             <input type="button" id="go" value="Go/Refresh" />
         </form>
     </p>

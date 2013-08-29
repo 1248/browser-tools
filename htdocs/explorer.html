@@ -7,6 +7,7 @@
 <script type="text/javascript" src="js/URI.js"></script>
 <script type="text/javascript" src="js/springy.js"></script>
 <script type="text/javascript" src="js/springyui.js"></script>
+<script type="text/javascript" src="js/base64.js"></script>
 <script type="text/javascript" src="js/api.js"></script>
 
 <script>
@@ -70,7 +71,7 @@ function parseCatalogue(url, doc) {
 }
 
 function explore(url, cb) {
-    fetch(url, function(err, doc) {
+    fetch(url, $('#key').val(), function(err, doc) {
         if (err) {
             log("Error in "+url+" ("+err+")");
             cb(err); // done
@@ -250,6 +251,7 @@ $(document).ready(function() {
         <form>
             <select id="examples"></select>
             URL:&nbsp;<input type="text" id="url" size=80 value="Enter a URL" />
+            Key&nbsp;<input type="text" id="key" size=40 value="" />
             <input type="button" id="go" value="Go" />
             <input type="button" id="clear" value="Clear" />
         </form>

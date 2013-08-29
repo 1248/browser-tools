@@ -5,6 +5,7 @@
 <script src="js/jquery-1.9.1.min.js"></script>
 <script src="js/jquery.scrollTo-1.4.2-min.js"></script>
 <script type="text/javascript" src="js/URI.js"></script>
+<script type="text/javascript" src="js/base64.js"></script>
 <script type="text/javascript" src="js/api.js"></script>
 
 <script>
@@ -86,15 +87,25 @@ function populateItem() {
     }
 }
 
-function loadItem(cat_url, item_url) {
+function loadItem(cat_url, item_url, key) {
     var url = cat_url + '?href=' + encodeURI(item_url);
-    fetch(url, function(err, body) {
+    fetch(url, key, function(err, body) {
         $('#cat_url').val(cat_url);
-        user_item = body.items[0];
-        console.log(JSON.stringify(user_item));
-        populateItem();
-        refreshRaw();
+        if (body !== undefined && body.items !== undefined && body.items.length != 1) {
+            alert('Loading single item from catalogue failed '+cat_url+' '+item_url);
+        } else {
+            user_item = body.items[0];
+            populateItem();
+            refreshRaw();
+        }
     });
+}
+
+function setHeaders(xhr) {
+    if ($('#key').val() !== "") {
+        xhr.setRequestHeader("Authorization", "Basic " + Base64.encode($('#key').val()));
+        return true;
+    }
 }
 
 $(document).ready(function() { 
@@ -103,12 +114,15 @@ $(document).ready(function() {
 
     var param_cat_url = getQueryVariable('cat_url');
     var param_item_url = getQueryVariable('href');
+    var param_key = getQueryVariable('key');
+    if (param_key === undefined)
+        param_key = "";
 
-    console.log(param_cat_url, param_item_url);
+    $('#key').val(param_key);
 
     if (param_cat_url !== undefined && param_item_url !== undefined) {
         log("loading item "+param_cat_url+" from catalogue "+param_cat_url);
-        loadItem(param_cat_url, param_item_url);
+        loadItem(param_cat_url, param_item_url, param_key);
     }
 
     $('#add_metadata').click(function() {
@@ -119,6 +133,7 @@ $(document).ready(function() {
     $('#post_item').click(function() {
         var url = $('#cat_url').val()+'?href='+encodeURI(user_item.href);
         $.ajax({
+            beforeSend: function(xhr){setHeaders(xhr);},
             type: 'POST',
             url: '/post?url=' + encodeURI(url),
             data: JSON.stringify(user_item),
@@ -171,7 +186,8 @@ $(document).ready(function() {
     <hr>
     <textarea disabled readonly id="raw" cols=80 rows=15></textarea>
     <p>
-        <input type="text" id="cat_url" size=80 value="http://dev.1248.io:8001/cat" />
+        Cat URL&nbsp;<input type="text" id="cat_url" size=80 value="http://dev.1248.io:8001/cat" />
+        Key&nbsp;<input type="text" id="key" size=40 value="" />
         <input type="button" id="post_item" value="Post" />
     </p>
 
