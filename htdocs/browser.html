@@ -63,10 +63,8 @@ function parseCatalogue(url, doc) {
         }
         itemListHTML += '</ul>';
 
-        var catEditLink= '<a href="catcreator.html?cat_url='+encodeURI(url)+'" target="_blank"><strong>[edit catalogue]</strong></a>';
-
         var listHTML = '<ul>';
-        listHTML += '<li>Catalogue Metadata '+catEditLink+'</li>';
+        listHTML += '<li>Catalogue Metadata</li>';
         listHTML += catMetadataListHTML;
         listHTML += '<li>Items</li>'
         listHTML += itemListHTML;
@@ -138,8 +136,8 @@ $(document).ready(function() {
             <input type="button" id="go" value="Go/Refresh" />
         </form>
     </p>
-
-            <input type="button" id="back" value="Back" />
+        <input type="button" id="back" value="Back" />&nbsp;
+        <a href="catcreator.html" target="_blank">[Create new catalogue]</a>&nbsp;
     <p>
         <div id="browser"></div>
     </p>
