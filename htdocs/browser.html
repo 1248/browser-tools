@@ -22,6 +22,21 @@ ga('send', 'pageview');
 <script>
 var history = [];
 
+function deleteCat(cat_url) {
+    del(cat_url, $('#key').val(), function(err) {
+        if (!err) {
+            // go back
+            if (history.length > 1) {
+                history.pop();  // throw away top
+                url = history.pop();
+                browse(url, function() {
+                    log('browse complete');
+                });
+            }
+        }
+    });
+}
+
 function deleteItem(cat_url, item_url) {
     var url = cat_url + "?href=" + encodeURI(item_url);
     del(url, $('#key').val(), function(err) {
@@ -77,8 +92,10 @@ function parseCatalogue(url, doc) {
 
         var createitemlink = '<a href="itemcreator.html?key='+encodeURIComponent($('#key').val())+'&cat_url='+encodeURI(url)+'" target="_blank"><strong>[add new item]</strong></a>';
 
+        var deletecatlink = '<a href="javascript:deleteCat(\''+url+'\');"><strong>[delete catalogue]</strong></a>';
+
         var listHTML = '<ul>';
-        listHTML += '<li>Catalogue Metadata</li>';
+        listHTML += '<li>Catalogue Metadata '+deletecatlink+'</li>';
         listHTML += catMetadataListHTML;
         listHTML += '<li>Items '+createitemlink+'</li>'
         listHTML += itemListHTML;
