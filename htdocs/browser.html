@@ -58,14 +58,22 @@ function parseCatalogue(url, doc) {
             var item = doc.items[i];
             item.href = URI(item.href).absoluteTo(url).toString();    // fixup relative URL
 
+            var isCat = false;
             var itemMetadataListHTML = '<ul>';
             for (var j=0;j<item['i-object-metadata'].length;j++) {
                 var mdata = item['i-object-metadata'][j];
                 itemMetadataListHTML += '<li>' + mdata.rel + ' = "' + mdata.val + '"</li>';
+                if (mdata.rel == "urn:X-tsbiot:rels:isContentType" && mdata.val == "application/vnd.tsbiot.catalogue+json")
+                    isCat = true;
             }
             itemMetadataListHTML += '</ul>';
 
-            var link = '<a href="javascript:browse(\''+item.href+'\', function(){})">'+item.href+'</a>';
+            var link;
+            if (isCat)
+                link = '<a href="javascript:browse(\''+item.href+'\', function(){})">'+item.href+'</a>';
+            else
+                link = '<a href="'+item.href+'">'+item.href+'</a>';
+
             var editlink = '<a href="itemcreator.html?cat_url='+encodeURI(url)+'&href='+encodeURI(item.href)+'" target="_blank"><strong>[edit item]</strong></a>';
 
             itemListHTML += '<li>'+link+' '+editlink+'</li>';
