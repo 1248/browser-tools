@@ -28,7 +28,7 @@ function del(url, key, cb) {
     $.ajax({
         beforeSend: function(xhr){
             if (key !== "")
-                xhr.setRequestHeader("Authorization", "Basic " + Base64.encode(key));
+                xhr.setRequestHeader("Authorization", "Basic " + Base64.encode(key + ':'));
         },
         type: 'DELETE',
         url: '/del?url='+encodeURI(url),
@@ -50,7 +50,7 @@ function fetch(url, key, cb) {
     $.ajax({
         beforeSend: function(xhr){
             if (key !== "")
-                xhr.setRequestHeader("Authorization", "Basic " + Base64.encode(key));
+                xhr.setRequestHeader("Authorization", "Basic " + Base64.encode(key + ':'));
         },
         type: 'GET',
         url: '/fetch?url='+encodeURI(url),

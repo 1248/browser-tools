@@ -90,7 +90,7 @@ function loadItem(cat_url, item_url, key) {
 
 function setHeaders(xhr) {
     if ($('#key').val() !== "") {
-        xhr.setRequestHeader("Authorization", "Basic " + Base64.encode($('#key').val()));
+        xhr.setRequestHeader("Authorization", "Basic " + Base64.encode($('#key').val() + ':'));
         return true;
     }
 }

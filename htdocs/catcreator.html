@@ -80,7 +80,7 @@ function populateItem() {
 
 function setHeaders(xhr) {
     if ($('#key').val() !== "") {
-        xhr.setRequestHeader("Authorization", "Basic " + Base64.encode($('#key').val()));
+        xhr.setRequestHeader("Authorization", "Basic " + Base64.encode($('#key').val() + ':'));
         return true;
     }
 }
