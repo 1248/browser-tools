@@ -72,6 +72,8 @@ function validateItem(item) {
         throw new Error("Item href is missing: "+JSON.stringify(item));
     if (typeof item.href != 'string')
         throw new Error("Item href is not a string: "+JSON.stringify(item));
+    if (item['i-object-metadata'] === undefined)
+        throw new Error("Item i-object-metdata is missing: "+JSON.stringify(item));
     if (!(item['i-object-metadata'] instanceof Array))
         throw new Error("Item metadata is not an array: "+JSON.stringify(item));
     validateMetadataArray(item['i-object-metadata'], false);
