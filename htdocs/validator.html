@@ -40,16 +40,20 @@ function validateMetadataArray(metadataArray, checkContentType) {
     for (var i=0;i<metadataArray.length;i++) {
         if (typeof metadataArray[i] != 'object')
             throw new Error("Metadata array does not contain an object: "+JSON.stringify(metadataArray[i]));
-        if (Object.keys(metadataArray[i]).length != 2)
-            throw new Error("Metadata array object has too many properties: "+JSON.stringify(metadataArray[i]));
+        if (metadataArray[i].rel === undefined)
+            throw new Error("Metadata array object has no rel: "+JSON.stringify(metadataArray[i]));
         if (typeof metadataArray[i].rel != 'string')
-            throw new Error("Metadata array object has no rel string: "+JSON.stringify(metadataArray[i]));
+            throw new Error("Metadata array object rel is not string: "+JSON.stringify(metadataArray[i]));
         if (metadataArray[i].rel === "")
             throw new Error("Metadata array object rel is empty "+JSON.stringify(metadataArray[i]));
+        if (metadataArray[i].val === undefined)
+            throw new Error("Metadata array object has no val: "+JSON.stringify(metadataArray[i]));
         if (typeof metadataArray[i].val != 'string')
             throw new Error("Metadata array object has no val string: "+JSON.stringify(metadataArray[i]));
         if (metadataArray[i].val === "")
             throw new Error("Metadata array object val is empty: "+JSON.stringify(metadataArray[i]));   // SmartStreets interpretation, to be ratified
+        if (Object.keys(metadataArray[i]).length != 2)
+            throw new Error("Metadata array object should have only two properties "+JSON.stringify(metadataArray[i]));
         if (metadataArray[i].rel == 'urn:X-tsbiot:rels:hasDescription:en')
             hasDescription = true;
         if (metadataArray[i].rel == 'urn:X-tsbiot:rels:isContentType' &&
@@ -64,6 +68,8 @@ function validateMetadataArray(metadataArray, checkContentType) {
 
 function validateItem(item) {
     // a valid item must have href and a metadata array
+    if (item.href === undefined)
+        throw new Error("Item href is missing: "+JSON.stringify(item));
     if (typeof item.href != 'string')
         throw new Error("Item href is not a string: "+JSON.stringify(item));
     if (!(item['i-object-metadata'] instanceof Array))
@@ -75,8 +81,12 @@ function validate_cat(cat) {
     var i;
     if (typeof cat != 'object')
         throw new Error("Catalogue is not an object: "+JSON.stringify(cat));
+    if (cat.items === undefined)
+        throw new Error("Catalogue items missing: "+JSON.stringify(cat));
     if (!(cat.items instanceof Array))
         throw new Error("Catalogue items are not an array: "+JSON.stringify(cat));
+    if (cat['item-metadata'] === undefined)
+        throw new Error("Catalogue item-metadata missing: "+JSON.stringify(cat));
     if (!(cat['item-metadata'] instanceof Array))
         throw new Error("Catalogue item-metadata is not an array: "+JSON.stringify(cat));
     validateMetadataArray(cat['item-metadata'], true);
