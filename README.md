@@ -14,6 +14,7 @@ Contents
    * server/htdocs/explorer.html an interactive browser-based catalogue explorer and knowledge graph viewer
    * server/htdocs/map.html a browser-based catalogue mapping demo
    * server/htdocs/browser.html a browser-based catalogue text browser demo
+   * server/htdocs/validator.html a fully browser side catalogue syntax checker
 
 Run the server
 --------------
