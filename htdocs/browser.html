@@ -67,18 +67,24 @@ function parseCatalogue(url, doc) {
             item.href = URI(item.href).absoluteTo(url).toString();    // fixup relative URL
 
             var isCat = false;
+            var isGenericResource = false;
             var itemMetadataListHTML = '<ul>';
             for (var j=0;j<item['i-object-metadata'].length;j++) {
                 var mdata = item['i-object-metadata'][j];
                 itemMetadataListHTML += '<li>' + mdata.rel + ' = "' + mdata.val + '"</li>';
                 if (mdata.rel == "urn:X-tsbiot:rels:isContentType" && mdata.val == "application/vnd.tsbiot.catalogue+json")
                     isCat = true;
+                if (mdata.rel == "urn:X-tsbiot:rels:isContentType" && (mdata.val == "application/vnd.tsbiot.resource+json" || mdata.val == "CompositeContentType"))
+                    isGenericResource = true;
             }
             itemMetadataListHTML += '</ul>';
 
             var link;
             if (isCat)
                 link = '<a href="javascript:browse(\''+item.href+'\', function(){})">'+item.href+'</a>';
+            else
+            if (isGenericResource)
+                link = '<a href="resourceviewer.html?key='+encodeURIComponent($('#key').val())+'&url='+encodeURI(item.href)+'" target="_blank">'+item.href+'</a>';
             else
                 link = '<a href="'+item.href+'">'+item.href+'</a>';
 
