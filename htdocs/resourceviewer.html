@@ -20,13 +20,6 @@ ga('send', 'pageview');
 </script>
 
 <script>
-function setHeaders(xhr) {
-    if ($('#key').val() !== "") {
-        xhr.setRequestHeader("Authorization", "Basic " + Base64.encode($('#key').val() + ':'));
-        return true;
-    }
-}
-
 function loadResource(url, key) {
     fetch(url, key, function(err, body) {
         if (!err) {
@@ -95,11 +88,11 @@ $(document).ready(function() {
     if (param_url !== undefined) {
         $('#url').val(param_url);
         log("loading resource "+param_url);
-        loadResource($('#url').val(), $('#key').val);
+        loadResource($('#url').val(), $('#key').val());
     }
 
     $('#get').click(function() {
-        loadResource($('#url').val(), $('#key').val);
+        loadResource($('#url').val(), $('#key').val());
     });
 });
 
