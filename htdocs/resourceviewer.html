@@ -105,6 +105,24 @@ SenML.prototype.toFlot = function() {
     }
     return flot;
 }
+SenML.prototype.toFlotMulti = function() {
+    var i;
+    var o = {};
+    var flot = [];
+    for (i=0;i<this.raw.e.length;i++) {
+        var bin = this.raw.e[i].n;
+        if (o[bin] === undefined)
+            o[bin] = {label:bin, data:[]};
+        if (this.raw.e[i].t !== undefined && this.raw.e[i].v !== undefined)
+            o[bin].data.push([this.raw.e[i].t, this.raw.e[i].v]);
+    }
+    var keys = Object.keys(o);
+    for (i=0;i<keys.length;i++) {
+        if (o[keys[i]].data.length > 0)
+            flot.push([o[keys[i]]]);
+    }
+    return flot;
+}
 
 function loadResource(url, key) {
     fetch(url, key, function(err, body) {
@@ -126,74 +144,23 @@ function loadResource(url, key) {
                         interactive: true
                     }
                 };
-                $.plot($('#chart'), d.toFlot(), options);
-                log(JSON.stringify(d));
+                //console.log(JSON.stringify(d.toFlot(), undefined, 4));
+                var flots = d.toFlotMulti();
+                var divs = "";
+                var i;
+                for (i=0;i<flots.length;i++) {
+                    divs += '<div id="chart'+i+'" style="width:600px;height:300px;"></div>';
+                }
+                $('#charts').html(divs);
+                for (i=0;i<flots.length;i++) {
+                    $.plot($('#chart'+i), flots[i], options);
+                }
             } catch(e) {
                 log(e);
             }
         }
     })
 }
-
-/*
-function loadResource(url, key) {
-    fetch(url, key, function(err, body) {
-        if (!err) {
-            var d = [];
-
-            var poss_sections = Object.keys(body);
-            var sections = [];
-            for (var i=0;i<poss_sections.length;i++) {
-                if (poss_sections[i].charAt(0) == '#')
-                    sections.push(poss_sections[i]);
-            }
-            for (var i=0;i<sections.length;i++) {
-                var poss_times = Object.keys(body[sections[i]]);
-                var times = [];
-                for (var j=0;j<poss_times.length;j++) {
-                    if (poss_times[j] != 'common')
-                        times.push(poss_times[j]);
-                }
-                log(sections[i] + "=" + JSON.stringify(times));
-                var points = [];
-                for (var k=0;k<times.length;k++) {
-log(times[k]);
-                    var timestamp = Date.parse(times[k]);
-                    //log(JSON.stringify(  (body[sections[i]])[times[k]]  ));
-                    var facts = (body[sections[i]])[times[k]];
-                    for (var f=0;f<facts.length;f++) {
-                        if (facts[f].rel == 'hasValue') {
-                            log([sections[i], timestamp, facts[f].val]);
-                            points.push([timestamp, parseFloat(facts[f].val)]);
-                        }
-                    }
-                }
-                if (points.length > 0)
-                    d.push({label: sections[i], data: points});
-            }
-            if (d.length > 0) {
-                var options = {
-                    series: {
-                        lines: { show: true },
-                        points: { show: true }
-                    },
-                    xaxis: {
-                        mode: "time"
-                    },
-                    zoom: {
-                        interactive: true
-                    },
-                    pan: {
-                        interactive: true
-                    }
-                };
-                $.plot($('#chart'), d, options);
-                log(JSON.stringify(d));
-            }
-        }
-    });
-}
-*/
 
 $(document).ready(function() { 
     var param_url = decodeURIComponent(getQueryVariable('url'));
@@ -227,7 +194,7 @@ $(document).ready(function() {
     </p>
 
     <p>
-        <div id="chart" style="width:600px;height:300px;"></div>
+        <div id="charts"></div>
     </p>
 
     <p>
