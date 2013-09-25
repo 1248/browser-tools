@@ -112,7 +112,7 @@ SenML.prototype.toFlotMulti = function() {
     for (i=0;i<this.raw.e.length;i++) {
         var bin = this.raw.e[i].n;
         if (o[bin] === undefined)
-            o[bin] = {label:bin, data:[]};
+            o[bin] = {title:bin, data:[]};
         if (this.raw.e[i].t !== undefined && this.raw.e[i].v !== undefined)
             o[bin].data.push([this.raw.e[i].t, this.raw.e[i].v]);
     }
@@ -144,12 +144,13 @@ function loadResource(url, key) {
                         interactive: true
                     }
                 };
-                //console.log(JSON.stringify(d.toFlot(), undefined, 4));
+//                console.log(JSON.stringify(d.toFlot(), undefined, 4));
                 var flots = d.toFlotMulti();
                 var divs = "";
                 var i;
                 for (i=0;i<flots.length;i++) {
-                    divs += '<div id="chart'+i+'" style="width:600px;height:300px;"></div>';
+                    //console.log(flots[i]);
+                    divs += ''+flots[i][0].title+'<div id="chart'+i+'" style="width:600px;height:300px;"></div>';
                 }
                 $('#charts').html(divs);
                 for (i=0;i<flots.length;i++) {
