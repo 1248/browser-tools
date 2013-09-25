@@ -53,7 +53,7 @@ function fetch(url, key, cb) {
                 xhr.setRequestHeader("Authorization", "Basic " + Base64.encode(key + ':'));
         },
         type: 'GET',
-        url: '/fetch?url='+encodeURI(url),
+        url: '/fetch?url='+encodeURIComponent(url),
         dataType: 'json',
         success: function(body, textStatus, xhr) {
             log('<- ' + xhr.status + ' ' + xhr.statusText);

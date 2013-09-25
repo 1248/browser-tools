@@ -74,7 +74,7 @@ function parseCatalogue(url, doc) {
                 itemMetadataListHTML += '<li>' + mdata.rel + ' = "' + mdata.val + '"</li>';
                 if (mdata.rel == "urn:X-tsbiot:rels:isContentType" && mdata.val == "application/vnd.tsbiot.catalogue+json")
                     isCat = true;
-                if (mdata.rel == "urn:X-tsbiot:rels:isContentType" && (mdata.val == "application/vnd.tsbiot.resource+json" || mdata.val == "CompositeContentType"))
+                if (mdata.rel == "urn:X-tsbiot:rels:isContentType" && (mdata.val == "application/senml+json" || mdata.val == "CompositeContentType"))
                     isGenericResource = true;
             }
             itemMetadataListHTML += '</ul>';
@@ -84,7 +84,7 @@ function parseCatalogue(url, doc) {
                 link = '<a href="javascript:browse(\''+item.href+'\', function(){})">'+item.href+'</a>';
             else
             if (isGenericResource)
-                link = '<a href="resourceviewer.html?key='+encodeURIComponent($('#key').val())+'&url='+encodeURI(item.href)+'" target="_blank">'+item.href+'</a>';
+                link = '<a href="resourceviewer.html?key='+encodeURIComponent($('#key').val())+'&url='+encodeURIComponent(item.href)+'" target="_blank">'+item.href+'</a>';
             else
                 link = '<a href="'+item.href+'">'+item.href+'</a>';
 

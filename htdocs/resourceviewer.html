@@ -20,6 +20,122 @@ ga('send', 'pageview');
 </script>
 
 <script>
+function SenML(raw) { 
+    this.importJSON = function(json) {  
+        this.raw = JSON.parse(JSON.stringify(json));
+        this.validate(raw);
+        this.expandTimes(raw);
+        this.unifyValues(raw);
+        this.sortTimes(raw);
+        this.expandNames(raw);
+    };
+    this.validate = function() {
+        if (0)  // FIXME validate
+            throw new Error("Invalid SenML");
+    };
+    this.unifyValues = function() {
+        for (var i=0;i<this.raw.e.length;i++) {
+            var e = this.raw.e[i];
+            if (e.v === undefined) {
+                if (e.bv !== undefined)
+                    e.v = (e.bv) ? 1 : 0;
+                if (e.sv !== undefined)
+                    e.v = parseFloat(e.sv);
+            }
+        }
+    };
+    this.expandTimes = function() {
+        if (this.raw.bt !== undefined) {
+            for (var i=0;i<this.raw.e.length;i++) {
+                var e = this.raw.e[i];
+                if (e.t !== undefined)
+                    e.t += this.raw.bt;
+            }
+        }
+    };
+    this.expandNames = function() {
+        if (this.raw.bn !== undefined) {
+            for (var i=0;i<this.raw.e.length;i++) {
+                var e = this.raw.e[i];
+                if (e.n !== undefined)
+                    e.n = this.raw.bn + e.n;
+            }
+        }
+    };
+    this.sortTimes = function() {
+        this.raw.e.sort(function(a,b) {
+            if (a.t < b.t)
+                return -1;
+            if (a.t > b.t)
+                return 1;
+            return 0;
+        });
+    };
+    this.toPrettyString = function() {
+        return JSON.stringify(this.raw, undefined, 4);
+    }
+    this.names = function() {
+        var names = [];
+        for (var i=0;i<raw.e.length;i++) {
+            if (names.indexOf(raw.e[i].n) == -1)
+                names.push(raw.e[i].n);
+        }
+        return names;
+    }
+    this.importJSON(raw);
+} 
+SenML.prototype.toString = function() {
+    return JSON.stringify(this.raw);
+}
+SenML.prototype.toFlot = function() {
+    var i;
+    var o = {};
+    var flot = [];
+    for (i=0;i<this.raw.e.length;i++) {
+        var bin = this.raw.e[i].n;
+        if (o[bin] === undefined)
+            o[bin] = {label:bin, data:[]};
+        if (this.raw.e[i].t !== undefined && this.raw.e[i].v !== undefined)
+            o[bin].data.push([this.raw.e[i].t, this.raw.e[i].v]);
+    }
+    var keys = Object.keys(o);
+    for (i=0;i<keys.length;i++) {
+        if (o[keys[i]].data.length > 0)
+            flot.push(o[keys[i]]);
+    }
+    return flot;
+}
+
+function loadResource(url, key) {
+    fetch(url, key, function(err, body) {
+        if (!err) {
+            try {
+                var d = new SenML(body);
+                var options = {
+                    series: {
+                        lines: { show: true },
+                        points: { show: true }
+                    },
+                    xaxis: {
+                        mode: "time"
+                    },
+                    zoom: {
+                        interactive: true
+                    },
+                    pan: {
+                        interactive: true
+                    }
+                };
+                $.plot($('#chart'), d.toFlot(), options);
+                log(JSON.stringify(d));
+            } catch(e) {
+                log(e);
+            }
+        }
+    })
+}
+
+/*
 function loadResource(url, key) {
     fetch(url, key, function(err, body) {
         if (!err) {
@@ -72,14 +188,15 @@ log(times[k]);
                     }
                 };
                 $.plot($('#chart'), d, options);
-                //log(JSON.stringify(d));
+                log(JSON.stringify(d));
             }
         }
     });
 }
+*/
 
 $(document).ready(function() { 
-    var param_url = getQueryVariable('url');
+    var param_url = decodeURIComponent(getQueryVariable('url'));
     var param_key = getQueryVariable('key');
     if (param_key === undefined)
         param_key = "";
@@ -101,7 +218,7 @@ $(document).ready(function() {
 
 <body>
     <a href="http://1248.io"><img src="logo-32x32.png" style="float: right;" border=0></a>
-    <h1>Generic Resource Viewer</h1>
+    <h1>SenML Resource Viewer</h1>
     <hr>
     <p>
         URL&nbsp;<input type="text" id="url" size=80 value="https://alertmeadaptor.appspot.com/resources/armmeetingrooms/BOX.json" />
