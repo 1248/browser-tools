@@ -48,6 +48,18 @@ function deleteItem(cat_url, item_url) {
     });
 }
 
+// http://stackoverflow.com/questions/5999118/add-or-update-query-string-parameter
+function updateQueryStringParameter(uri, key, value) {
+    var re = new RegExp("([?|&])" + key + "=.*?(&|$)", "i");
+    separator = uri.indexOf('?') !== -1 ? "&" : "?";
+    if (uri.match(re)) {
+        return uri.replace(re, '$1' + key + "=" + value + '$2');
+    }
+    else {
+        return uri + separator + key + "=" + value;
+    }
+}
+
 function parseCatalogue(url, doc) {
     var catMetadataListHTML = '<ul>';
     try {
@@ -69,8 +81,11 @@ function parseCatalogue(url, doc) {
             var isCat = false;
             var isGenericResource = false;
             var itemMetadataListHTML = '<ul>';
+            var supportsQueryOpenIoT = false;
             for (var j=0;j<item['i-object-metadata'].length;j++) {
                 var mdata = item['i-object-metadata'][j];
+                if (mdata.rel == 'urn:X-tsbiot:rels:supports:query' && mdata.val == 'urn:X-tsbiot:query:openiot:v1')
+                    supportsQueryOpenIoT = true;
                 itemMetadataListHTML += '<li>' + mdata.rel + ' = "' + mdata.val + '"</li>';
                 if (mdata.rel == "urn:X-tsbiot:rels:isContentType" && mdata.val == "application/vnd.tsbiot.catalogue+json")
                     isCat = true;
@@ -91,7 +106,28 @@ function parseCatalogue(url, doc) {
             var editlink = '<a href="itemcreator.html?key='+encodeURIComponent($('#key').val())+'&cat_url='+encodeURI(url)+'&href='+encodeURI(item.href)+'" target="_blank"><strong>[edit item]</strong></a>';
             var deletelink = '<a href="javascript:deleteItem(\''+url+'\',\''+item.href+'\');"><strong>[delete item]</strong></a>';
 
-            itemListHTML += '<li>'+link+' '+editlink+' '+deletelink+'</li>';
+            var gen_url = function(base, rollup, interval) {
+                var rsrcurl = base
+                rsrcurl = updateQueryStringParameter(rsrcurl, 'interval', interval);
+                rsrcurl = updateQueryStringParameter(rsrcurl, 'rollup', rollup);
+                return '<a href="resourceviewer.html?key='+encodeURIComponent($('#key').val())+'&url='+encodeURIComponent(rsrcurl)+'" target="_blank">['+interval+' '+rollup+']</a>';
+            }
+
+            if (supportsQueryOpenIoT) {
+                itemListHTML += '<li>'+link+' '+editlink+' '+deletelink;
+                itemListHTML += ' ' + gen_url(item.href, "avg", "1d");
+                itemListHTML += ' ' + gen_url(item.href, "avg", "1h");
+                itemListHTML += ' ' + gen_url(item.href, "avg", "1m");
+                itemListHTML += ' ' + gen_url(item.href, "min", "1d");
+                itemListHTML += ' ' + gen_url(item.href, "min", "1h");
+                itemListHTML += ' ' + gen_url(item.href, "min", "1m");
+                itemListHTML += ' ' + gen_url(item.href, "max", "1d");
+                itemListHTML += ' ' + gen_url(item.href, "max", "1h");
+                itemListHTML += ' ' + gen_url(item.href, "max", "1m");
+                itemListHTML += '</li>';
+            }
+            else
+                itemListHTML += '<li>'+link+' '+editlink+' '+deletelink+'</li>';
             itemListHTML += itemMetadataListHTML;
         }
         itemListHTML += '</ul>';
