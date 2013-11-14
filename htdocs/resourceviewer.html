@@ -164,7 +164,7 @@ function loadResource(url, key) {
 }
 
 $(document).ready(function() { 
-    var param_url = decodeURIComponent(getQueryVariable('url'));
+    var param_url = getQueryVariable('url');
     var param_key = getQueryVariable('key');
     if (param_key === undefined)
         param_key = "";
