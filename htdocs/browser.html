@@ -114,7 +114,7 @@ function parseCatalogue(url, doc) {
             }
 
             if (supportsQueryOpenIoT) {
-                itemListHTML += '<li>'+link+' '+editlink+' '+deletelink;
+                itemListHTML += '<li>'+link /*+' '+editlink+' '+deletelink*/;
                 itemListHTML += ' ' + gen_url(item.href, "avg", "1d");
                 itemListHTML += ' ' + gen_url(item.href, "avg", "1h");
                 itemListHTML += ' ' + gen_url(item.href, "avg", "1m");
@@ -127,7 +127,7 @@ function parseCatalogue(url, doc) {
                 itemListHTML += '</li>';
             }
             else
-                itemListHTML += '<li>'+link+' '+editlink+' '+deletelink+'</li>';
+                itemListHTML += '<li>'+link/*+' '+editlink+' '+deletelink*/+'</li>';
             itemListHTML += itemMetadataListHTML;
         }
         itemListHTML += '</ul>';
@@ -137,9 +137,9 @@ function parseCatalogue(url, doc) {
         var deletecatlink = '<a href="javascript:deleteCat(\''+url+'\');"><strong>[delete catalogue]</strong></a>';
 
         var listHTML = '<ul>';
-        listHTML += '<li>Catalogue Metadata '+deletecatlink+'</li>';
+        listHTML += '<li>Catalogue Metadata '/*+deletecatlink*/+'</li>';
         listHTML += catMetadataListHTML;
-        listHTML += '<li>Items '+createitemlink+'</li>'
+        listHTML += '<li>Items '+/*createitemlink+*/'</li>'
         listHTML += itemListHTML;
         listHTML += '</ul>';
 
