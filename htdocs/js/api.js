@@ -57,7 +57,7 @@ function fetch(url, key, cb) {
         dataType: 'json',
         success: function(body, textStatus, xhr) {
             log('<- ' + xhr.status + ' ' + xhr.statusText);
-            cb(null, body);
+            cb(null, body, xhr.getResponseHeader('Location'));
         },
         error: function(xhr, textStatus) {
             log('<- Error ' + xhr.status + ' ' + xhr.statusText);

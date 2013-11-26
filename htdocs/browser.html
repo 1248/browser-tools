@@ -150,14 +150,16 @@ function parseCatalogue(url, doc) {
 }
 
 function browse(url, cb) {
-    fetch(url, $('#key').val(), function(err, doc) {
+    fetch(url, $('#key').val(), function(err, doc, location) {
         if (err) {
             log("Error in "+url+" ("+err+")");
             cb(err); // done
         } else {
-            history.push(url);
-            $('#url').val(url);
-            parseCatalogue(url, doc);    // parse doc
+            if (location === undefined)
+                location = url;
+            history.push(location);
+            $('#url').val(location);
+            parseCatalogue(location, doc);    // parse doc
             cb(null); // done
         }
     });

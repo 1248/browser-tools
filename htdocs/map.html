@@ -77,14 +77,16 @@ function crawl(cb) {
         var url = unexplored.pop();
 
         if (explored.indexOf(url) == -1) {   // not seen before
-            fetch(url, $('#key').val(), function(err, doc) {
+            fetch(url, $('#key').val(), function(err, doc, location) {
                 if (err) {
                     log("Error in "+url+" ("+err+")");
                     explored.push(url); // was bad, but explored
                     crawl(cb);
                 } else {
                     explored.push(url);
-                    expandCatalogue(url, doc);    // parse doc
+                    if (location === undefined)
+                        location = url;
+                    expandCatalogue(location, doc);    // parse doc
                     crawl(cb);    // do some more work
                 }
             });
