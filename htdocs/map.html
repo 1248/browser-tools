@@ -152,6 +152,19 @@ function plotOnMap(locs) {
 
 
 $(document).ready(function() { 
+    var param_url = getQueryVariable('url');
+    var param_key = getQueryVariable('key');
+    if (param_key === undefined)
+        param_key = "";
+
+    $('#key').val(param_key);
+    if (param_url !== undefined) {
+        $('#url').val(param_url);
+        startcrawl($('#url').val());
+    }
+
+    populateExamples();
+
     initMap();
     populateExamples();
 
